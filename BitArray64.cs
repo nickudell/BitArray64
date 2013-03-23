@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace BitArray64
 {
-    class BitArray64 : IEnumerable<int>
+    class BitArray64 : IEnumerable<bool>
     {
         //Field
         private ulong number;
@@ -23,9 +23,9 @@ namespace BitArray64
         }
 
         //IEnumerable interface implementation
-        public IEnumerator<int> GetEnumerator()
+        public IEnumerator<bool> GetEnumerator()
         {
-            int[] bitsArray = this.GetBits();
+            bool[] bitsArray = this.GetBits();
 
             for (int i = 0; i < bitsArray.Length; i++)
             {
@@ -39,14 +39,19 @@ namespace BitArray64
         }
 
         //Method to get the bits of the number and put them in an array
-        private int[] GetBits()
+        private bool[] GetBits()
         {
             ulong num = this.Number;
-            int[] bitsArray = new int[64];
-            string numAsstring = Convert.ToString((long)num, 2).PadLeft(64,'0');
-            for (int i = 0; i < bitsArray.Length; i++)
+            bool[] bitsArray =new bool[64];
+            ulong remainder = num;
+            for(int i = 63;i>=0;i--)
             {
-                bitsArray[i] = (int)(numAsstring[i] -'0');
+                bitPart = 2^i; //The base two value referenced by the bit. Ideally replace this using the >> operator
+                if(remainder > bitPart)
+                {
+                    remainder-=bitPart;
+                    bitsArray[63-i] = true; //little endian
+                }
             }
             return bitsArray;
         }
@@ -81,7 +86,7 @@ namespace BitArray64
             return this.number.GetHashCode();
         }
         //Indexer
-        public bool GetIndex(int index)
+        public bool IsOutOfIndexBoundsBounds(int index)
         {
                 if (index > 63 || index < 0)
                 {
@@ -94,17 +99,17 @@ namespace BitArray64
         }
 
         //Index check for the bit at certain position
-        public int this[int index]
+        public bool this[int index]
         {
             get
             {
-                if (GetIndex(index))
+                if (IsOutOfIndexBoundsBounds(index))
                 {
                     throw new IndexOutOfRangeException("The index should be in the interval [0, 63]");
                 }
                 else
                 {
-                    int[] bitsArray = this.GetBits();
+                    bool[] bitsArray = this.GetBits();
                     return bitsArray[index];
                 }
             }
